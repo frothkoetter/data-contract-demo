@@ -87,24 +87,29 @@ params = {
     "typeName": "hive_table"
 }
 
-# Query Atlas for tablename and get GUID 
 response = requests.get(url_atlas_search, headers=headers, params=params)
 
-# Handle the response
 if response.status_code == 200:
     try:
-        # Parse the response JSON
         response_json = response.json()
-	# Extract the GUID
-        guid = response_json["searchResults"]["entities"][0]["guid"] 
-        print(f"Extracted GUID: {guid}")
-	# set the tag attributes status
-        if success:
-           response = set_tag(guid, "DataContract", "active")
+        
+        # Print the full response for debugging
+        # print("Full response JSON:", json.dumps(response_json, indent=2))
+        
+        # Correctly check for entities
+        entities = response_json.get('searchResults', {}).get('entities', [])
+        # Print the entities for debugging
+        # print(entities)        
+        if entities:
+            guid = entities[0]['guid']
+            print(f"Extracted GUID: {guid}")
+
+            classification_status = "active" if success else "broken"
+            set_tag(guid, "DataContract", classification_status)
         else:
-           response = set_tag(guid, "DataContract", "broken")
-    except requests.exceptions.JSONDecodeError:
-        print("Error: The response is not valid JSON")
+            print("No entities found in the response. Check if the table name is correct or if it exists.")
+    except (KeyError, requests.exceptions.JSONDecodeError) as e:
+        print(f"Error parsing response: {e}")
 else:
     print(f"Failed with status code {response.status_code}: {response.text}")
 
