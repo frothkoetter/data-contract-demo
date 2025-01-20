@@ -11,11 +11,11 @@ import logging
 import subprocess
 import time
 from airflow.decorators import dag
-from airflow.providers.common.sql.operators.sql import ( SQLColumnCheckOperator, SQLTableCheckOperator, SQLCheckOperator,SQLExecuteQueryOperator)
+from airflow.providers.common.sql.operators.sql import ( SQLColumnCheckOperator, SQLTableCheckOperator, SQLCheckOperator,SQLExecuteQueryOperator,SQLValueCheckOperator)
 from airflow.utils.dates import days_ago
 from datetime import datetime, timedelta
 
-_CONN_ID = "cdw-impala"
+_CONN_ID = "cdw-conn"
 _TABLE_NAME = "dbt_airlinedata_demo_reports.airline_performance" 
 # Define expected schema
 EXPECTED_SCHEMA = {
@@ -153,7 +153,6 @@ check_consistency= SQLColumnCheckOperator(
         table=_TABLE_NAME,
         column_mapping={
             "airline_code": {
-          	 "null_check": {"equal_to": 0},
             	 "distinct_check": {"geq_to": 2},
             },
         },
@@ -167,6 +166,16 @@ check_volume = SQLTableCheckOperator(
             "row_count_check": {"check_statement": "COUNT(*) >= 20"},
         },
     )
+
+check_acceptable_range = SQLValueCheckOperator(
+        task_id="check_acceptable_range",
+        dag = dag,
+        conn_id=_CONN_ID,
+        sql=f"select avg(avg_departure_delay) FROM {_TABLE_NAME}", 
+	pass_value=8,
+	tolerance=0.15  #15% tollerance 
+    )
+
 
 # Define the freshness threshold (e.g., 24 hours ago from now)
 freshness_threshold = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')
@@ -233,4 +242,5 @@ describe_table >> validate_schema >> [
 	check_nulls_ranges, 
 	check_volume, 
 	check_consistency,
+	check_acceptable_range,
 	check_freshness] >> sla_start_timer_task >> sla_run_query_task >> sla_end_timer_task  >> set_data_contract_status

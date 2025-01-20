@@ -1,0 +1,95 @@
+data_contract:
+  version: "1.0"
+  dataset_name: "Airline Performance Data"
+  description: >
+    This dataset contains performance metrics for various airlines, including total flights, 
+    average departure/arrival delays, and total cancellations. The data is updated periodically 
+    and is used for tracking and analyzing airline operational performance.
+
+  created_by: "Data Engineering Team"
+  created_at: "2025-01-13"
+  updated_at: "2025-01-13"
+  data_source: "Airline performance database"
+  data_usage:
+    - "Business Intelligence"
+    - "Performance Analysis"
+    - "Operational Reporting"
+  
+  schema:
+    fields:
+      - name: "airline_code"
+        description: "Unique airline code"
+        type: "string"
+        constraints:
+          not_null: true
+          length: 2
+      - name: "airline_name"
+        description: "Name of the airline"
+        type: "string"
+        constraints:
+          not_null: true
+          max_length: 255
+      - name: "total_flights"
+        description: "Total number of flights operated by the airline"
+        type: "integer"
+        constraints:
+          not_null: true
+          minimum: 0
+      - name: "avg_departure_delay"
+        description: "Average delay in minutes for departures"
+        type: "float"
+        constraints:
+          not_null: true
+          minimum: -15
+      - name: "avg_arrival_delay"
+        description: "Average delay in minutes for arrivals"
+        type: "float"
+        constraints:
+          not_null: true
+          minimum: -15
+      - name: "total_cancelled"
+        description: "Total number of cancelled flights by the airline"
+        type: "integer"
+        constraints:
+          not_null: true
+          minimum: 0
+      - name: "update_date"
+        description: "Date when the data was last updated"
+        type: "date"
+        constraints:
+          not_null: true
+          format: "YYYY-MM-DD"
+
+  compliance:
+    gdpr: 
+      compliant: true
+      description: "The dataset does not contain personally identifiable information (PII)."
+    soc2: 
+      compliant: true
+      description: "Data security and confidentiality standards should be followed for the storage and access of this dataset."
+    hipaa: 
+      compliant: true
+      description: "The dataset does not contain any health-related information (PHI)."
+
+  quality_checks:
+    - "Accuracy: All data values should be accurate and reflect real-world performance."
+    - "Completeness: The dataset should not have missing values in key fields such as total_flights, avg_departure_delay, etc."
+    - "Consistency: Ensure consistent formats for all fields (e.g., date format should always be YYYY-MM-DD)."
+    - "Timeliness: The data should be updated regularly, at least once a day."
+
+  data_access:
+    level: "Public"
+    description: "The data is intended for public consumption, subject to compliance with data security best practices."
+    access_control: 
+      - "Only authorized personnel can modify the data."
+      - "Data access should be logged and monitored."
+
+  versioning:
+    - version: "1.0"
+      release_date: "2025-01-13"
+      changes: "Initial dataset release."
+
+  data_integrity:
+    - "Ensure no data is tampered with or corrupted during processing."
+    - "Audit logs should be maintained for all data updates and modifications."
+
